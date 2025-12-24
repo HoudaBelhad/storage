@@ -1,11 +1,9 @@
 # Storage
 
-[![Lines-of-Code](https://tokei.rs/b1/github/ilyalisov/storage)](https://github.com/ilyalisov/storage)
-[![Hits-of-Code](https://hitsofcode.com/github/ilyalisov/storage?branch=master)](https://hitsofcode.com/github/ilyalisov/storage/view?branch=master)
 [![mvn](https://github.com/ilyalisov/storage/actions/workflows/maven-build.yml/badge.svg)](https://github.com/ilyalisov/storage/actions/workflows/maven-build.yml)
 [![codecov](https://codecov.io/gh/IlyaLisov/storage/graph/badge.svg?token=OJR6TFQ2qr)](https://codecov.io/gh/IlyaLisov/storage)
-
-**Maven Build Code Coverage License: MIT Storage Maven Central**
+[![Hits-of-Code](https://hitsofcode.com/github/ilyalisov/storage?branch=master)](https://hitsofcode.com/github/ilyalisov/storage/view?branch=master)
+[![Lines-of-Code](https://tokei.rs/b1/github/ilyalisov/storage)](https://github.com/ilyalisov/storage)
 
 A comprehensive Java storage library for fast and convenient storing and accessing data in your Java applications. Currently supports MinIO and Firebase storage services with a unified API.
 
@@ -14,13 +12,10 @@ A comprehensive Java storage library for fast and convenient storing and accessi
 - [Features](#features)
 - [Quick Start](#quick-start)
   - [Installation](#installation)
-    - [Maven](#maven)
-    - [Gradle](#gradle)
 - [Core Components](#core-components)
   - [Storage Service Interface](#storage-service-interface)
   - [Storage File](#storage-file)
   - [Page Pagination](#page-pagination)
-- [Storage Operations](#storage-operations)
 - [Supported Providers](#supported-providers)
   - [MinIO Storage Service](#minio-storage-service)
   - [Firebase Storage Service](#firebase-storage-service)
@@ -49,7 +44,7 @@ Get your file storage operations up and running quickly with a unified API that 
 
 ### Installation
 
-#### Maven
+**Maven:**
 
 Add to your `pom.xml`:
 
@@ -61,7 +56,7 @@ Add to your `pom.xml`:
 </dependency>
 ```
 
-#### Gradle
+**Gradle:**
 
 Add to your `build.gradle` or `build.gradle.kts`:
 
@@ -116,21 +111,6 @@ public class Page {
 }
 ```
 
-## Storage Operations
-
-| Method | Description | Parameters | Returns |
-|--------|-------------|------------|---------|
-| `save(StorageFile)` | Save file to default location | `file` - File to save | `Path` - Path to saved file |
-| `save(StorageFile, Path)` | Save file to specific path | `file` - File to save<br>`path` - Target directory | `Path` - Path to saved file |
-| `delete(String)` | Delete file by name from default location | `fileName` - Name of file to delete | `void` |
-| `delete(String, Path)` | Delete file by name from specific path | `fileName` - Name of file to delete<br>`path` - Directory path | `void` |
-| `delete(Path)` | Delete entire directory | `path` - Directory to delete | `void` |
-| `exists(String)` | Check if file exists in default location | `fileName` - Name of file to check | `boolean` - True if file exists |
-| `exists(String, Path)` | Check if file exists in specific path | `fileName` - Name of file to check<br>`path` - Directory path | `boolean` - True if file exists |
-| `find(String)` | Find file by name in default location | `fileName` - Name of file to find | `Optional<StorageFile>` - File if found |
-| `find(String, Path)` | Find file by name in specific path | `fileName` - Name of file to find<br>`path` - Directory path | `Optional<StorageFile>` - File if found |
-| `findAll(Path, Page)` | List all files in directory with pagination | `path` - Directory to list<br>`page` - Pagination parameters | `List<StorageFile>` - List of files |
-
 ## Supported Providers
 
 ### MinIO Storage Service
@@ -164,65 +144,73 @@ StorageService storageService = new FirebaseStorageServiceImpl(
 
 ### Instantiate a Service
 
+You need to create `MinIOStorageService` object and pass login data for MinIO to the constructor.
+
 ```java
 public class Main {
     public static void main(String[] args) {
-        // MinIO example
-        StorageService minioService = new MinIOStorageServiceImpl(
-            "http://localhost:9000",
-            "rootUser",
-            "rootPassword",
-            "bucket"
-        );
-        
-        // Firebase example
-        InputStream firebaseCredentials = new ByteArrayInputStream(
-            System.getenv("FIREBASE_SECRET").getBytes()
-        );
-        StorageService firebaseService = new FirebaseStorageServiceImpl(
-            firebaseCredentials,
-            System.getenv("FIREBASE_BUCKET")
+        String host = "http://localhost:9000";
+        String rootUser = "rootUser";
+        String rootPassword = "rootPassword";
+        String bucket = "bucket";
+
+        StorageService storageService = new MinIOStorageServiceImpl(
+                host,
+                rootUser,
+                rootPassword,
+                bucket
         );
     }
 }
 ```
 
+And for Firebase it is a bit different.
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        InputStream inputStream = new ByteArrayInputStream(
+                System.getenv("FIREBASE_SECRET").getBytes()
+        );
+        String bucket = System.getenv("FIREBASE_BUCKET");
+
+        StorageService storageService = new FirebaseStorageServiceImpl(
+                inputStream,
+                bucket
+        );
+    }
+}
+```
+
+After, you can call available methods and use library.
+
 ### Save File
 
-Save files with automatic path generation:
+To save file just call method save. It will return path to saved file.
 
 ```java
 public class Main {
     public static void main(String[] args) {
         StorageFile file = new StorageFile(
-            "document.txt",
-            "text/plain",
-            new ByteArrayInputStream("File content".getBytes())
+                "fileName",
+                "text/plain",
+                new ByteArrayInputStream("...")
         );
-        
-        // Save to default location
-        Path savedPath = storageService.save(file);
-        
-        // Save to specific folder
-        Path savedInFolder = storageService.save(file, Path.of("documents"));
+
+        Path path = storageService.save(file);
     }
 }
 ```
 
 ### Delete File
 
-Flexible file deletion operations:
+You can delete file by its name, name and path, and you can delete entire folder by path.
 
 ```java
 public class Main {
     public static void main(String[] args) {
-        // Delete from default location
         storageService.delete("file.txt");
-        
-        // Delete from specific folder
         storageService.delete("file.txt", Path.of("folder"));
-        
-        // Delete entire folder
         storageService.delete(Path.of("folder"));
     }
 }
@@ -230,32 +218,29 @@ public class Main {
 
 ### Check If File Exists
 
-Verify file existence before operations:
+You can check whether file exists or not.
 
 ```java
 public class Main {
     public static void main(String[] args) {
-        boolean existsInRoot = storageService.exists("file.txt");
-        boolean existsInFolder = storageService.exists("file.txt", Path.of("folder"));
+        boolean file1 = storageService.exists("file.txt");
+        boolean file2 = storageService.exists("file.txt", Path.of("folder"));
     }
 }
 ```
 
 ### Get File
 
-Retrieve files with optional path specification:
+You can get file from storage by calling corresponding methods.
 
 ```java
 public class Main {
     public static void main(String[] args) {
-        // Find single file
         Optional<StorageFile> file = storageService.find("file.txt");
-        Optional<StorageFile> fileInFolder = storageService.find("file.txt", Path.of("folder"));
-        
-        // List files in directory with pagination
+        Optional<StorageFile> file2 = storageService.find("file.txt", Path.of("folder"));
         List<StorageFile> files = storageService.findAll(
-            Path.of("folder"),
-            new Page(0, 10)
+                Path.of("folder"),
+                new Page(0, 10)
         );
     }
 }
