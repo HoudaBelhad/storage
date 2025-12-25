@@ -2,6 +2,9 @@ name: maven-build
 on:
   pull_request:
     branches: [ "*" ]
+concurrency:
+  group: firebase-ci
+  cancel-in-progress: false
 
 jobs:
   maven:
