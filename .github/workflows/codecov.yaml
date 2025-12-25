@@ -4,6 +4,9 @@ on:
     branches: [ "*" ]
   pull_request:
     branches: [ "*" ]
+concurrency:
+  group: firebase-ci
+  cancel-in-progress: false
 
 jobs:
   codecov:
