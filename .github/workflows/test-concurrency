@@ -1,0 +1,10 @@
+name: test-concurrency
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: firebase-ci
+      cancel-in-progress: false
+    steps:
+      - run: echo "test concurrency"
